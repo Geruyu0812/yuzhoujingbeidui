@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代码生成与补全 - 编程智能辅助系统</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f9f5f0;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(#e8d4bd20 1px, transparent 1px),
+                radial-gradient(#e8d4bd20 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        .header {
+            background-color: rgba(255, 253, 250, 0.95);
+            padding: 20px 30px;
+            box-shadow: 0 2px 15px rgba(200, 180, 160, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #e2c2a0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            color: #6d5c4e;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            width: 90%;
+            margin: 30px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .main-title {
+            color: #6d5c4e;
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #8a796d;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        .prompt-section {
+            background-color: rgba(255, 253, 250, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(200, 180, 160, 0.1);
+        }
+
+        .prompt-label {
+            color: #6d5c4e;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .prompt-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e8d4bd;
+            border-radius: 10px;
+            font-size: 16px;
+            color: #6d5c4e;
+            box-sizing: border-box;
+            resize: none;
+            transition: border-color 0.3s;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: #d9c4ab;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .option {
+            background-color: #fffcf8;
+            border: 1px solid #e8d4bd;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            color: #6d5c4e;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            background-color: #f8f2ea;
+            border-color: #d9c4ab;
+        }
+
+        .option.active {
+            background-color: #e2c2a030;
+            border-color: #e2c2a0;
+        }
+
+        .action-btn {
+            background-color: #e2c2a0;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(200, 180, 160, 0.2);
+        }
+
+        .action-btn:hover {
+            background-color: #d4b391;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(200, 180, 160, 0.25);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            flex: 1;
+            background-color: rgba(255, 253, 250, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(200, 180, 160, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            color: #6d5c4e;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .result-action {
+            background-color: #fffcf8;
+            border: 1px solid #e8d4bd;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 14px;
+            color: #6d5c4e;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .result-action:hover {
+            background-color: #f8f2ea;
+            border-color: #d9c4ab;
+        }
+
+        .result-content {
+            flex: 1;
+            min-height: 300px;
+            border: 1px solid #e8d4bd;
+            border-radius: 10px;
+            padding: 15px;
+            color: #6d5c4e;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            font-size: 14px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #fefdfb;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #b0a498;
+            font-size: 13px;
+            border-top: 1px solid #e8d4bd;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .container {
+                margin: 20px auto;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .options {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">💻</div>
+            <div class="logo-text">编程智能辅助系统</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div>
+            <h1 class="main-title">代码生成与补全</h1>
+            <p class="subtitle">描述您的需求，AI将帮您生成高质量代码</p>
+        </div>
+
+        <section class="prompt-section">
+            <label for="prompt-input" class="prompt-label">请描述您需要生成的代码：</label>
+            <textarea id="prompt-input" class="prompt-input" rows="5" placeholder="例如：写一个Python函数，计算斐波那契数列..."></textarea>
+            
+            <div class="controls">
+                <div class="options">
+                    <div class="option active" data-lang="python">Python</div>
+                    <div class="option" data-lang="java">Java</div>
+                    <div class="option" data-lang="c">C#</div>
+                    <div class="option" data-lang="cpp">C++</div>
+                </div>
+                <button id="generate-btn" class="action-btn">生成代码</button>
+            </div>
+        </section>
+
+        <section class="result-section">
+            <div class="result-header">
+                <div class="result-title">生成的代码</div>
+                <div class="result-actions">
+                    <button class="result-action" id="copy-btn">
+                        <span>复制</span>
+                    </button>
+                </div>
+            </div>
+            <div id="result-display" class="result-content">
+                <!-- 代码结果将显示在这里 -->
+                <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #b0a498;">
+                    生成的代码将显示在这里...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        陪伴每一位开发者成长，我们一直都在 ❤️ | 2025 编程智能辅助系统
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取页面元素
+            const generateBtn = document.getElementById('generate-btn');
+            const promptInput = document.getElementById('prompt-input');
+            const resultDisplay = document.getElementById('result-display');
+            const copyBtn = document.getElementById('copy-btn');
+            const langOptions = document.querySelectorAll('.option[data-lang]');
+
+            // 设置从主页传递过来的需求描述
+            const urlParams = new URLSearchParams(window.location.search);
+            const prompt = urlParams.get('prompt');
+            if (prompt) {
+                promptInput.value = decodeURIComponent(prompt);
+            }
+
+            // 语言选择
+            langOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    langOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // 生成代码按钮点击事件
+            generateBtn.addEventListener('click', async function() {
+                const prompt = promptInput.value.trim();
+                if (prompt === '') {
+                    alert('请输入需求描述！');
+                    return;
+                }
+
+                // 显示加载状态
+                resultDisplay.innerHTML = '<div style="color: #6d5c4e;">正在生成代码，请稍候...</div>';
+                
+                try {
+                    // 获取选中的编程语言
+                    const activeLang = document.querySelector('.option.active').dataset.lang;
+                    
+                    // 调用后端API（实际使用时替换为你的API地址）
+                    const response = await fetch('/api/generate-code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 如果需要认证，添加认证头
+                            // 'Authorization': 'Bearer ' + yourAuthToken
+                        },
+                        body: JSON.stringify({
+                            prompt: prompt,
+                            language: activeLang
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`请求失败: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // 显示生成的代码
+                    if (data.code) {
+                        resultDisplay.textContent = data.code;
+                    } else {
+                        resultDisplay.innerHTML = '<div style="color: #d32f2f;">未能生成代码，请尝试调整需求描述</div>';
+                    }
+                    
+                } catch (error) {
+                    console.error('生成代码时出错:', error);
+                    resultDisplay.innerHTML = `<div style="color: #d32f2f;">生成失败: ${error.message}</div>`;
+                }
+            });
+
+            // 复制代码按钮点击事件
+            copyBtn.addEventListener('click', function() {
+                const codeContent = resultDisplay.textContent.trim();
+                
+                if (codeContent === '生成的代码将显示在这里...' || 
+                    codeContent === '正在生成代码，请稍候...') {
+                    alert('没有可复制的代码！');
+                    return;
+                }
+
+                // 创建临时文本域用于复制
+                const textarea = document.createElement('textarea');
+                textarea.value = codeContent;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+
+                // 显示复制成功提示
+                const originalText = copyBtn.querySelector('span').textContent;
+                copyBtn.querySelector('span').textContent = '已复制';
+                setTimeout(() => {
+                    copyBtn.querySelector('span').textContent = originalText;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编程智能辅助系统</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f9f5f0;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-image: 
+                radial-gradient(#e8d4bd20 1px, transparent 1px),
+                radial-gradient(#e8d4bd20 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 700px;
+            width: 90%;
+            padding: 35px 25px;
+            background-color: rgba(255, 253, 250, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(200, 180, 160, 0.12);
+            margin: 20px;
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            background-color: #e2c2a0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+            box-shadow: 0 4px 12px rgba(200, 180, 160, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        h1 {
+            color: #6d5c4e;
+            margin-bottom: 12px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            font-size: 28px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 15%;
+            width: 70%;
+            height: 3px;
+            background-color: #e2c2a030;
+            border-radius: 2px;
+        }
+
+        .subtitle {
+            color: #8a796d;
+            margin-bottom: 28px;
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .button-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            margin-bottom: 35px;
+        }
+
+        .function-button {
+            background-color: #fffcf8;
+            color: #6d5c4e;
+            padding: 22px 15px;
+            border: 1px solid #e8d4bd;
+            border-radius: 14px;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(200, 180, 160, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .function-button small {
+            font-size: 13px;
+            color: #8a796d;
+            line-height: 1.4;
+            font-weight: 400;
+            max-width: 220px;
+        }
+
+        .function-button:hover {
+            background-color: #f8f2ea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 18px rgba(200, 180, 160, 0.18);
+            border-color: #d9c4ab;
+        }
+
+        .function-button::before {
+            content: "✦";
+            color: #e2c2a0;
+            font-size: 18px;
+        }
+
+        .features-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 28px;
+            color: #736458;
+            font-size: 13px;
+            padding: 0 10px;
+        }
+
+        .features-bar span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 0;
+        }
+
+        .features-bar span::before {
+            content: "•";
+            color: #e2c2a0;
+        }
+
+        footer {
+            margin-top: 20px;
+            color: #b0a498;
+            font-size: 13px;
+            padding-top: 18px;
+            border-top: 1px solid #e8d4bd;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 28px 20px;
+                border-radius: 16px;
+            }
+            
+            .button-container {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+            
+            h1 {
+                font-size: 25px;
+            }
+            
+            .subtitle {
+                font-size: 15px;
+                margin-bottom: 25px;
+            }
+            
+            .function-button {
+                padding: 18px 12px;
+                font-size: 15px;
+            }
+            
+            .features-bar {
+                gap: 12px;
+                font-size: 12px;
+                margin-bottom: 25px;
+            }
+            
+            .logo {
+                width: 65px;
+                height: 65px;
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">💻</div>
+        <h1>编程智能辅助系统</h1>
+        <p class="subtitle">在这里，让编程学习变得更轻松、更有趣 ✨</p>
+        
+        <div class="features-bar">
+            <span>实时反馈</span>
+            <span>个性化学习</span>
+            <span>24小时在线</span>
+        </div>
+
+        <div class="button-container">
+            <a href="代码生成与补全.html" class="function-button">
+                代码生成与补全
+                <small>AI帮你快速编写代码</small>
+            </a>
+            <a href="错误检测与反馈.html" class="function-button">
+                错误检测与反馈
+                <small>智能定位并修复代码问题</small>
+            </a>
+            <a href="薄弱点分析与训练.html" class="function-button">
+                薄弱点分析与训练
+                <small>找出你的知识短板</small>
+            </a>
+            <a href="智能助教.html" class="function-button">
+                智能助教
+                <small>随时解答你的编程疑问</small>
+            </a>
+        </div>
+        
+        <footer>
+            陪伴每一位开发者成长，我们一直都在 ❤️ | 2025 编程智能辅助系统
+        </footer>
+    </div>
+</body>
+</html>

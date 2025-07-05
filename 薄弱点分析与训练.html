@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>薄弱点分析与训练 - 编程智能辅助系统</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f9f5f0;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(#e8d4bd20 1px, transparent 1px),
+                radial-gradient(#e8d4bd20 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        .header {
+            background-color: rgba(255, 253, 250, 0.95);
+            padding: 20px 30px;
+            box-shadow: 0 2px 15px rgba(200, 180, 160, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #e2c2a0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            color: #6d5c4e;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .nav {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav a {
+            color: #8a796d;
+            text-decoration: none;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .nav a:hover {
+            color: #6d5c4e;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            width: 90%;
+            margin: 30px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .main-title {
+            color: #6d5c4e;
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #8a796d;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        .analysis-section,
+        .training-section {
+            background-color: rgba(255, 253, 250, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(200, 180, 160, 0.1);
+        }
+
+        .category-title,
+        .training-title {
+            color: #6d5c4e;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .skill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .skill-name,
+        .skill-score {
+            color: #8a796d;
+            font-size: 15px;
+        }
+
+        .skill-score {
+            color: #6d5c4e;
+            font-weight: 500;
+        }
+
+        .skill-progress {
+            flex: 1;
+            margin: 0 15px;
+            height: 10px;
+            background-color: #f2e8dd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #e2c2a0;
+            transition: width 0.5s ease;
+        }
+
+        .training-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .training-filters {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            background-color: #fffcf8;
+            border: 1px solid #e8d4bd;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            color: #6d5c4e;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            background-color: #f8f2ea;
+            border-color: #d9c4ab;
+        }
+
+        .filter-btn.active {
+            background-color: #e2c2a030;
+            border-color: #e2c2a0;
+        }
+
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .exercise-card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(200, 180, 160, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .exercise-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(200, 180, 160, 0.2);
+        }
+
+        .card-header {
+            padding: 15px;
+            background-color: #f8f2ea;
+            color: #6d5c4e;
+            font-weight: 500;
+        }
+
+        .card-content {
+            padding: 15px;
+        }
+
+        .exercise-desc {
+            color: #8a796d;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .exercise-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #b0a498;
+        }
+
+        .card-footer {
+            padding: 15px;
+            border-top: 1px solid #e8d4bd;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .start-btn {
+            background-color: #e2c2a0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            background-color: #d4b391;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #b0a498;
+            font-size: 13px;
+            border-top: 1px solid #e8d4bd;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .nav {
+                gap: 15px;
+            }
+
+            .container {
+                margin: 20px auto;
+            }
+
+            .exercises-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .training-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">💻</div>
+            <div class="logo-text">编程智能辅助系统</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div>
+            <h1 class="main-title">薄弱点分析与训练</h1>
+            <p class="subtitle">了解你的编程能力分布，针对性提升薄弱环节</p>
+        </div>
+
+        <section class="analysis-section">
+            <h2 class="category-title">编程技能评估</h2>
+            
+            <div class="skill-category">
+                <h3 class="category-title">Python 基础</h3>
+                <div class="skill-item">
+                    <div class="skill-name">数据结构</div>
+                    <div class="skill-progress">
+                        <div class="progress-bar" style="width: 65%;"></div>
+                    </div>
+                    <div class="skill-score">65%</div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">控制流</div>
+                    <div class="skill-progress">
+                        <div class="progress-bar" style="width: 80%;"></div>
+                    </div>
+                    <div class="skill-score">80%</div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">函数与模块</div>
+                    <div class="skill-progress">
+                        <div class="progress-bar" style="width: 72%;"></div>
+                    </div>
+                    <div class="skill-score">72%</div>
+                </div>
+            </div>
+
+            <div class="skill-category">
+                <h3 class="category-title">算法与数据结构</h3>
+                <div class="skill-item">
+                    <div class="skill-name">排序算法</div>
+                    <div class="skill-progress">
+                        <div class="progress-bar" style="width: 58%;"></div>
+                    </div>
+                    <div class="skill-score">58%</div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">递归</div>
+                    <div class="skill-progress">
+                        <div class="progress-bar" style="width: 45%;"></div>
+                    </div>
+                    <div class="skill-score">45%</div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">搜索算法</div>
+                    <div class="skill-progress">
+                        <div class="progress-bar" style="width: 60%;"></div>
+                    </div>
+                    <div class="skill-score">60%</div>
+                </div>
+            </div>
+
+            <div class="skill-category">
+                <h3 class="category-title">高级特性</h3>
+                <div class="skill-item">
+                    <div class="skill-name">异常处理</div>
+                    <div class="skill-progress">
+                        <div class="progress-bar" style="width: 75%;"></div>
+                    </div>
+                    <div class="skill-score">75%</div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">多线程</div>
+                    <div class="skill-progress">
+                        <div class="progress-bar" style="width: 30%;"></div>
+                    </div>
+                    <div class="skill-score">30%</div>
+                </div>
+                <div class="skill-item">
+                    <div class="skill-name">装饰器</div>
+                    <div class="skill-progress">
+                        <div class="progress-bar" style="width: 40%;"></div>
+                    </div>
+                    <div class="skill-score">40%</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="training-section">
+            <div class="training-header">
+                <div class="training-title">推荐练习</div>
+                <div class="training-filters">
+                    <button class="filter-btn active">所有类型</button>
+                    <button class="filter-btn">基础</button>
+                    <button class="filter-btn">进阶</button>
+                    <button class="filter-btn">高级</button>
+                </div>
+            </div>
+
+            <div class="exercises-grid">
+                <div class="exercise-card">
+                    <div class="card-header">链表反转</div>
+                    <div class="card-content">
+                        <div class="exercise-desc">实现一个函数，将单链表进行反转。要求时间复杂度为O(n)，空间复杂度为O(1)。</div>
+                        <div class="exercise-meta">
+                            <span>难度: 中等</span>
+                            <span>预计时间: 20分钟</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="start-btn">开始练习</button>
+                    </div>
+                </div>
+
+                <div class="exercise-card">
+                    <div class="card-header">文件解析与处理</div>
+                    <div class="card-content">
+                        <div class="exercise-desc">编写一个程序，读取CSV文件并统计其中的数据，生成简单的报表。</div>
+                        <div class="exercise-meta">
+                            <span>难度: 基础</span>
+                            <span>预计时间: 15分钟</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="start-btn">开始练习</button>
+                    </div>
+                </div>
+
+                <div class="exercise-card">
+                    <div class="card-header">异步爬虫实现</div>
+                    <div class="card-content">
+                        <div class="exercise-desc">使用asyncio和aiohttp库实现一个简单的异步爬虫，爬取指定网站的内容。</div>
+                        <div class="exercise-meta">
+                            <span>难度: 高级</span>
+                            <span>预计时间: 40分钟</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="start-btn">开始练习</button>
+                    </div>
+                </div>
+
+                <div class="exercise-card">
+                    <div class="card-header">异常处理实践</div>
+                    <div class="card-content">
+                        <div class="exercise-desc">修改给定的程序，添加适当的异常处理机制，确保程序在各种情况下都能正常运行。</div>
+                        <div class="exercise-meta">
+                            <span>难度: 中等</span>
+                            <span>预计时间: 25分钟</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="start-btn">开始练习</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        陪伴每一位开发者成长，我们一直都在 ❤️ | 2025 编程智能辅助系统
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化页面元素
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const exerciseCards = document.querySelectorAll('.exercise-card');
+
+            // 筛选按钮点击事件
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 更新按钮状态
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filter = this.textContent;
+                    
+                    // 筛选练习卡片
+                    exerciseCards.forEach(card => {
+                        const difficulty = card.querySelector('.exercise-meta span:first-child').textContent;
+                        
+                        if (filter === '所有类型' || difficulty.includes(filter)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // 模拟技能条动画效果
+            setTimeout(() => {
+                const progressBars = document.querySelectorAll('.progress-bar');
+                progressBars.forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 300);
+                });
+            }, 300);
+        });
+    </script>
+</body>
+</html>

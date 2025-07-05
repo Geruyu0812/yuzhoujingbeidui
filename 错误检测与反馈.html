@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错误检测与反馈 - 编程智能辅助系统</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f9f5f0;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(#e8d4bd20 1px, transparent 1px),
+                radial-gradient(#e8d4bd20 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        .header {
+            background-color: rgba(255, 253, 250, 0.95);
+            padding: 20px 30px;
+            box-shadow: 0 2px 15px rgba(200, 180, 160, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #e2c2a0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            color: #6d5c4e;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .nav {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav a {
+            color: #8a796d;
+            text-decoration: none;
+            font-size: 15px;
+            transition: color 0.3s;
+        }
+
+        .nav a:hover {
+            color: #6d5c4e;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            width: 90%;
+            margin: 30px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .main-title {
+            color: #6d5c4e;
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #8a796d;
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        .code-section {
+            background-color: rgba(255, 253, 250, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(200, 180, 160, 0.1);
+        }
+
+        .code-label {
+            color: #6d5c4e;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .code-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e8d4bd;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #6d5c4e;
+            box-sizing: border-box;
+            resize: none;
+            transition: border-color 0.3s;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            min-height: 200px;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: #d9c4ab;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .option {
+            background-color: #fffcf8;
+            border: 1px solid #e8d4bd;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 14px;
+            color: #6d5c4e;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option:hover {
+            background-color: #f8f2ea;
+            border-color: #d9c4ab;
+        }
+
+        .option.active {
+            background-color: #e2c2a030;
+            border-color: #e2c2a0;
+        }
+
+        .action-btn {
+            background-color: #e2c2a0;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(200, 180, 160, 0.2);
+        }
+
+        .action-btn:hover {
+            background-color: #d4b391;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(200, 180, 160, 0.25);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .result-section {
+            flex: 1;
+            background-color: rgba(255, 253, 250, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(200, 180, 160, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            color: #6d5c4e;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .result-content {
+            flex: 1;
+            min-height: 200px;
+            border: 1px solid #e8d4bd;
+            border-radius: 10px;
+            padding: 15px;
+            color: #6d5c4e;
+            font-size: 14px;
+            overflow: auto;
+            background-color: #fefdfb;
+        }
+
+        .error-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e8d4bd;
+        }
+
+        .error-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .error-type {
+            font-weight: 600;
+            color: #d32f2f;
+            margin-bottom: 5px;
+        }
+
+        .error-location {
+            color: #8a796d;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .error-message {
+            line-height: 1.5;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #b0a498;
+            font-size: 13px;
+            border-top: 1px solid #e8d4bd;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .nav {
+                gap: 15px;
+            }
+
+            .container {
+                margin: 20px auto;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .options {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* 加载动画样式 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6d5c4e;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">💻</div>
+            <div class="logo-text">编程智能辅助系统</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div>
+            <h1 class="main-title">错误检测与反馈</h1>
+            <p class="subtitle">粘贴您的代码，AI将帮您分析并找出潜在问题</p>
+        </div>
+
+        <section class="code-section">
+            <label for="code-input" class="code-label">请粘贴您的代码：</label>
+            <textarea id="code-input" class="code-input" rows="8" placeholder="在此粘贴您的代码..."></textarea>
+
+            <div class="controls">
+                <div class="options">
+                    <div class="option active" data-lang="python">Python</div>
+                    <div class="option" data-lang="java">Java</div>
+                    <div class="option" data-lang="csharp">C#</div>
+                    <div class="option" data-lang="cpp">C++</div>
+                </div>
+                <button id="analyze-btn" class="action-btn">分析代码</button>
+            </div>
+        </section>
+
+        <section class="result-section">
+            <div class="result-header">
+                <div class="result-title">错误分析结果</div>
+                <div class="result-actions">
+                    <button class="result-action" id="copy-results-btn">
+                        <span>复制结果</span>
+                    </button>
+                </div>
+            </div>
+            <div id="result-display" class="result-content">
+                <!-- 错误分析结果将显示在这里 -->
+                <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: #b0a498;">
+                    分析结果将显示在这里...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        陪伴每一位开发者成长，我们一直都在 ❤️ | 2025 编程智能辅助系统
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 获取页面元素
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const codeInput = document.getElementById('code-input');
+            const resultDisplay = document.getElementById('result-display');
+            const copyResultsBtn = document.getElementById('copy-results-btn');
+            const langOptions = document.querySelectorAll('.option[data-lang]');
+
+            // 语言选择
+            langOptions.forEach(option => {
+                option.addEventListener('click', function () {
+                    langOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // 生成模拟错误数据的函数
+            function getMockErrors(lang) {
+                let errorList = [];
+                if (lang === 'python') {
+                    errorList = [
+                        {
+                            type: "语法错误",
+                            location: "第3行，第5列",
+                            message: "SyntaxError: 缺少冒号"
+                        },
+                        {
+                            type: "未定义变量",
+                            location: "第7行，第12列",
+                            message: "NameError: 变量 'x' 未定义"
+                        }
+                    ];
+                } else if (lang === 'java') {
+                    errorList = [
+                        {
+                            type: "类型不匹配",
+                            location: "第5行，第14列",
+                            message: "Type mismatch: 无法将 int 转换为 String"
+                        },
+                        {
+                            type: "缺少分号",
+                            location: "第10行，第20列",
+                            message: "SyntaxError: 缺少 ';'"
+                        }
+                    ];
+                } else if (lang === 'csharp') {
+                    errorList = [
+                        {
+                            type: "语法错误",
+                            location: "第2行，第8列",
+                            message: "Unexpected token"
+                        },
+                        {
+                            type: "未定义函数",
+                            location: "第9行，第3列",
+                            message: "ReferenceError: 函数 'calculate' 未定义"
+                        }
+                    ];
+                } else if (lang === 'cpp') {
+                    errorList = [
+                        {
+                            type: "类型不匹配",
+                            location: "第4行，第10列",
+                            message: "Type mismatch: 无法将 char* 转换为 int"
+                        },
+                        {
+                            type: "缺少分号",
+                            location: "第8行，第15列",
+                            message: "SyntaxError: 缺少 ';'"
+                        }
+                    ];
+                }
+                return errorList;
+            }
+
+            // 分析代码按钮点击事件
+            analyzeBtn.addEventListener('click', async function () {
+                const code = codeInput.value.trim();
+                if (code === '') {
+                    alert('请粘贴代码！');
+                    return;
+                }
+
+                // 显示加载状态
+                resultDisplay.innerHTML = '<div class="loading">正在分析代码，请稍候...</div>';
+
+                try {
+                    // 获取选中的编程语言
+                    const activeLang = document.querySelector('.option.active').dataset.lang;
+
+                    // 这里应该替换为真实的 API 请求
+                    // const response = await fetch('/api/analyze-code', {
+                    //     method: 'POST',
+                    //     headers: {
+                    //         'Content-Type': 'application/json'
+                    //     },
+                    //     body: JSON.stringify({
+                    //         code: code,
+                    //         language: activeLang
+                    //     })
+                    // });
+
+                    // if (!response.ok) {
+                    //     throw new Error(`请求失败: ${response.status}`);
+                    // }
+
+                    // const data = await response.json();
+
+                    // 模拟 API 请求延迟
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    const errorList = getMockErrors(activeLang);
+
+                    // 生成错误列表 HTML
+                    let errorHtml = '';
+                    if (errorList.length > 0) {
+                        errorHtml = errorList.map(error => `
+                            <div class="error-item">
+                                <div class="error-type">${error.type}</div>
+                                <div class="error-location">${error.location}</div>
+                                <div class="error-message">${error.message}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        errorHtml = '<div style="color: #388e3c;">🎉 恭喜！代码中未发现错误</div>';
+                    }
+
+                    resultDisplay.innerHTML = errorHtml;
+                } catch (error) {
+                    console.error('分析代码时出错:', error);
+                    resultDisplay.innerHTML = `<div style="color: #d32f2f;">分析失败: ${error.message}</div>`;
+                }
+            });
+
+            // 复制结果按钮点击事件
+            copyResultsBtn.addEventListener('click', function () {
+                if (resultDisplay.textContent.trim() === '分析结果将显示在这里...' ||
+                    resultDisplay.textContent.trim() === '正在分析代码，请稍候...') {
+                    alert('没有可复制的结果！');
+                    return;
+                }
+
+                // 创建临时文本域用于复制
+                const textarea = document.createElement('textarea');
+                textarea.value = resultDisplay.textContent;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+
+                // 显示复制成功提示
+                const originalText = copyResultsBtn.querySelector('span').textContent;
+                copyResultsBtn.querySelector('span').textContent = '已复制';
+                setTimeout(() => {
+                    copyResultsBtn.querySelector('span').textContent = originalText;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

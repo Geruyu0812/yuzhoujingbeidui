@@ -310,6 +310,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 获取页面元素
             const generateBtn = document.getElementById('generate-btn');
+            const runBtn = document.getElementById('run-btn');
             const promptInput = document.getElementById('prompt-input');
             const resultDisplay = document.getElementById('result-display');
             const copyBtn = document.getElementById('copy-btn');
@@ -345,36 +346,124 @@
                     // 获取选中的编程语言
                     const activeLang = document.querySelector('.option.active').dataset.lang;
                     
-                    // 调用后端API（实际使用时替换为你的API地址）
-                    const response = await fetch('/api/generate-code', {
+                    // 调用后端API
+                    const response = await fetch('http://127.0.0.1:5000/api/code', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            // 如果需要认证，添加认证头
-                            // 'Authorization': 'Bearer ' + yourAuthToken
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
+                            action: 'generate',
                             prompt: prompt,
                             language: activeLang
                         })
                     });
                     
+                    // 检查网络响应状态
                     if (!response.ok) {
-                        throw new Error(`请求失败: ${response.status}`);
+                        throw new Error(`HTTP错误，状态码: ${response.status}`);
+                    }
+                    
+                    // 检查响应是否为JSON格式
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error(`无效的响应格式: ${contentType}`);
                     }
                     
                     const data = await response.json();
                     
                     // 显示生成的代码
-                    if (data.code) {
-                        resultDisplay.textContent = data.code;
+                    if (data.generated_code) {
+                        resultDisplay.textContent = data.generated_code;
                     } else {
-                        resultDisplay.innerHTML = '<div style="color: #d32f2f;">未能生成代码，请尝试调整需求描述</div>';
+                        resultDisplay.innerHTML = `
+                            <div style="color: #d32f2f;">未能生成代码，请尝试调整需求描述</div>
+                            ${data.error ? `<div class="detailed-error">错误详情: ${data.error}</div>` : ''}
+                        `;
                     }
                     
                 } catch (error) {
                     console.error('生成代码时出错:', error);
-                    resultDisplay.innerHTML = `<div style="color: #d32f2f;">生成失败: ${error.message}</div>`;
+                    resultDisplay.innerHTML = `
+                        <div style="color: #d32f2f;">生成失败: ${error.message}</div>
+                        <div class="detailed-error">
+                            请检查:
+                            <ol>
+                                <li>后端服务器是否运行在 http://127.0.0.1:5000</li>
+                                <li>后端API路径是否为 /api/code</li>
+                                <li>是否存在跨域限制（CORS）</li>
+                            </ol>
+                        </div>
+                    `;
+                }
+            });
+
+            // 运行代码按钮点击事件
+            runBtn.addEventListener('click', async function() {
+                const code = resultDisplay.textContent.trim();
+                if (code === '' || code === '生成的代码将显示在这里...' || code === '正在生成代码，请稍候...') {
+                    alert('没有可运行的代码！');
+                    return;
+                }
+
+                // 显示加载状态
+                resultDisplay.innerHTML = '<div style="color: #6d5c4e;">正在运行代码，请稍候...</div>';
+                
+                try {
+                    // 获取选中的编程语言
+                    const activeLang = document.querySelector('.option.active').dataset.lang;
+                    
+                    // 调用后端API
+                    const response = await fetch('http://127.0.0.1:5000/api/code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'run',
+                            code: code,
+                            language: activeLang
+                        })
+                    });
+                    
+                    // 检查网络响应状态
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误，状态码: ${response.status}`);
+                    }
+                    
+                    // 检查响应是否为JSON格式
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error(`无效的响应格式: ${contentType}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // 显示运行结果
+                    if (data.result) {
+                        resultDisplay.textContent = data.result;
+                    } else if (data.error) {
+                        resultDisplay.innerHTML = `<div class="error-item">
+                            <div class="error-type">运行错误</div>
+                            <div class="error-message">${data.error}</div>
+                        </div>`;
+                    } else {
+                        resultDisplay.innerHTML = '<div style="color: #d32f2f;">未能获取运行结果</div>';
+                    }
+                    
+                } catch (error) {
+                    console.error('运行代码时出错:', error);
+                    resultDisplay.innerHTML = `
+                        <div style="color: #d32f2f;">运行失败: ${error.message}</div>
+                        <div class="detailed-error">
+                            请检查:
+                            <ol>
+                                <li>后端服务器是否运行在 http://127.0.0.1:5000</li>
+                                <li>后端API路径是否为 /api/code</li>
+                                <li>是否存在跨域限制（CORS）</li>
+                            </ol>
+                        </div>
+                    `;
                 }
             });
 
@@ -383,7 +472,8 @@
                 const codeContent = resultDisplay.textContent.trim();
                 
                 if (codeContent === '生成的代码将显示在这里...' || 
-                    codeContent === '正在生成代码，请稍候...') {
+                    codeContent === '正在生成代码，请稍候...' ||
+                    codeContent === '正在运行代码，请稍候...') {
                     alert('没有可复制的代码！');
                     return;
                 }

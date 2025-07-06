@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编程学习可视化工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            background-color: #f9f5f0;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image:
+                radial-gradient(#e8d4bd20 1px, transparent 1px),
+                radial-gradient(#e8d4bd20 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        .card {
+            background-color: rgba(255, 253, 250, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(200, 180, 160, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn {
+            background-color: #e2c2a0;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #d4b391;
+            transform: scale(1.05);
+        }
+
+        .chart-container {
+            height: 350px;
+        }
+
+        .var-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .achievement-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 20px;
+            background-color: #3498db;
+            color: white;
+            font-size: 14px;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .notification-success {
+            background-color: #2ecc71;
+        }
+
+        .notification-error {
+            background-color: #e73c3c;
+        }
+    </style>
+</head>
+<body class="container py-5">
+    <header class="text-center mb-5">
+        <h1 class="display-4 text-primary">数据可视化</h1>
+        <p class="lead text-muted">通过直观的数据展示提升你的学习效率</p>
+    </header>
+
+    <div class="row">
+        <!-- 左侧面板：数据录入与控制 -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fa fa-edit mr-2"></i>练习数据录入</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label for="day1">第1天练习次数:</label>
+                        <input type="number" id="day1" class="form-control" value="3">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="day2">第2天练习次数:</label>
+                        <input type="number" id="day2" class="form-control" value="5">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="day3">第3天练习次数:</label>
+                        <input type="number" id="day3" class="form-control" value="2">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="day4">第4天练习次数:</label>
+                        <input type="number" id="day4" class="form-control" value="7">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="day5">第5天练习次数:</label>
+                        <input type="number" id="day5" class="form-control" value="4">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button id="updateChartBtn" class="btn btn-primary">
+                            <i class="fa fa-refresh mr-2"></i>更新练习数据
+                        </button>
+                        <button id="resetBtn" class="btn btn-warning">
+                            <i class="fa fa-undo mr-2"></i>重置所有数据
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="autoSave">
+                            <label class="form-check-label" for="autoSave">
+                                自动保存数据
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="showTips">
+                            <label class="form-check-label" for="showTips">
+                                显示操作提示
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 成就系统 -->
+            <div class="card mt-4">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="fa fa-trophy mr-2"></i>成就系统</h3>
+                </div>
+                <div class="card-body">
+                    <div id="achievementsList" class="mb-3">
+                        <p class="text-muted">完成任务解锁成就</p>
+                    </div>
+                    <div class="progress-container">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>已解锁成就:</span>
+                            <span id="achievementCount" class="fw-bold">0/10</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar bg-success" id="achievementProgress" role="progressbar" 
+                                 style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                0%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧面板：图表与学习进度 -->
+        <div class="col-lg-8 mb-4">
+            <!-- 练习数据图表 -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0"><i class="fa fa-chart-line mr-2"></i>练习进度可视化</h3>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group mb-3" role="group">
+                        <button id="lineChartBtn" class="btn btn-primary active">折线图</button>
+                        <button id="barChartBtn" class="btn btn-secondary">柱状图</button>
+                        <button id="areaChartBtn" class="btn btn-secondary">面积图</button>
+                    </div>
+                    <div class="chart-container" id="practiceChart"></div>
+                </div>
+            </div>
+            
+            <!-- 学习进度与报告 -->
+            <div class="card mt-4">
+                <div class="card-header bg-warning text-white">
+                    <h3 class="mb-0"><i class="fa fa-file-alt mr-2"></i>学习进度报告</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="progress-container">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>总练习次数:</span>
+                                    <span id="totalPractice" class="fw-bold">21</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar bg-info" id="practiceProgress" role="progressbar" 
+                                         style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">
+                                        70%
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>连续练习天数:</span>
+                                    <span id="consecutiveDays" class="fw-bold">3</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar bg-warning" id="streakProgress" role="progressbar" 
+                                         style="width: 30%" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">
+                                        30%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="progress-container">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>已掌握知识点:</span>
+                                    <span id="masteredTopics" class="fw-bold">7/10</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar bg-success" id="topicProgress" role="progressbar" 
+                                         style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">
+                                        70%
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>平均正确率:</span>
+                                    <span id="avgCorrectRate" class="fw-bold">85%</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 20px;">
+                                    <div class="progress-bar bg-primary" id="correctRateProgress" role="progressbar" 
+                                         style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">
+                                        85%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <button id="generateReportBtn" class="btn btn-lg btn-success">
+                            <i class="fa fa-bar-chart mr-2"></i>生成详细学习报告
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 详细报告模态框 -->
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title" id="reportModalLabel">学习详细报告</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>练习趋势分析</h5>
+                            <div id="trendChart" style="height: 300px;"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>知识点掌握情况</h5>
+                            <div id="topicChart" style="height: 300px;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>近期练习记录</h5>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>练习次数</th>
+                                    <th>正确率</th>
+                                    <th>耗时(分钟)</th>
+                                    <th>掌握知识点</th>
+                                </tr>
+                            </thead>
+                            <tbody id="practiceTable">
+                                <!-- JS动态填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa fa-download mr-2"></i>下载报告
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notificationContainer"></div>
+
+    <script>
+        // 初始化图表
+        const myChart = echarts.init(document.getElementById('practiceChart'));
+        const trendChart = echarts.init(document.getElementById('trendChart'));
+        const topicChart = echarts.init(document.getElementById('topicChart'));
+        
+        // 当前图表类型
+        let currentChartType = 'line';
+        
+        // 学习进度数据结构
+        const LearningProgress = {
+            practiceData: [3, 5, 2, 7, 4, 0, 0],
+            practiceRecords: [], // 练习记录
+            consecutiveDays: 0,  // 连续练习天数
+            achievements: [],    // 已解锁成就
+            totalPractice: 21,   // 总练习次数
+            masteredTopics: 7,   // 已掌握知识点
+            avgCorrectRate: 85   // 平均正确率
+        };
+        
+        // 成就定义
+        const AchievementDefinitions = [
+            {
+                id: 'first-achievement',
+                name: '初次尝试',
+                description: '完成第一次练习',
+                icon: 'fa-star',
+                condition: (progress) => progress.practiceRecords.length > 0
+            },
+            {
+                id: '5-days-streak',
+                name: '连续5天练习',
+                description: '连续5天进行编程练习',
+                icon: 'fa-fire',
+                condition: (progress) => progress.consecutiveDays >= 5
+            },
+            {
+                id: '100-practice',
+                name: '百炼成钢',
+                description: '累计完成100次练习',
+                icon: 'fa-trophy',
+                condition: (progress) => progress.totalPractice >= 100
+            },
+            {
+                id: 'master-all',
+                name: '知识大师',
+                description: '掌握所有知识点',
+                icon: 'fa-graduation-cap',
+                condition: (progress) => progress.masteredTopics >= 10
+            },
+            {
+                id: 'high-accuracy',
+                name: '完美主义者',
+                description: '平均正确率达到95%以上',
+                icon: 'fa-bullseye',
+                condition: (progress) => progress.avgCorrectRate >= 95
+            }
+        ];
+        
+        // 初始化
+        function init() {
+            // 加载本地存储数据
+            loadFromLocalStorage();
+            
+            // 渲染主图表
+            renderPracticeChart();
+            
+            // 渲染成就列表
+            renderAchievements();
+            
+            // 更新学习进度显示
+            updateProgressDisplay();
+            
+            // 绑定事件监听
+            bindEvents();
+            
+            // 显示欢迎提示
+            if (!localStorage.getItem('hasSeenWelcome')) {
+                showNotification('欢迎使用编程学习可视化工具！', 'success');
+                localStorage.setItem('hasSeenWelcome', 'true');
+            }
+        }
+        
+        // 从本地存储加载数据
+        function loadFromLocalStorage() {
+            const savedProgress = localStorage.getItem('learningProgress');
+            if (savedProgress) {
+                Object.assign(LearningProgress, JSON.parse(savedProgress));
+            }
+            
+            // 加载用户设置
+            const autoSave = localStorage.getItem('autoSave');
+            const showTips = localStorage.getItem('showTips');
+            
+            if (autoSave !== null) {
+                document.getElementById('autoSave').checked = autoSave === 'true';
+            }
+            
+            if (showTips !== null) {
+                document.getElementById('showTips').checked = showTips === 'true';
+            }
+        }
+        
+        // 保存数据到本地存储
+        function saveToLocalStorage() {
+            localStorage.setItem('learningProgress', JSON.stringify(LearningProgress));
+        }
+        
+        // 渲染练习数据图表
+        function renderPracticeChart() {
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' },
+                    formatter: (params) => {
+                        const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                        return `${days[params[0].dataIndex]}<br>练习次数：${params[0].value}`;
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    axisLabel: {
+                        color: '#666'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    min: 0,
+                    max: 15,
+                    interval: 3,
+                    axisLabel: {
+                        color: '#666'
+                    },
+                    name: '练习次数',
+                    nameLocation: 'middle',
+                    nameGap: 30
+                },
+                series: [{
+                    name: '练习次数',
+                    data: LearningProgress.practiceData,
+                    type: currentChartType,
+                    label: {
+                        show: true,
+                        position: 'top',
+                        color: '#333'
+                    },
+                    itemStyle: {
+                        color: '#3498db'
+                    },
+                    lineStyle: {
+                        width: 3,
+                        color: '#3498db'
+                    },
+                    areaStyle: currentChartType === 'area' ? {
+                        color: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [{
+                                offset: 0, color: 'rgba(52, 152, 219, 0.4)'
+                            }, {
+                                offset: 1, color: 'rgba(52, 152, 219, 0)'
+                            }],
+                            global: false
+                        }
+                    } : undefined
+                }]
+            };
+            
+            myChart.setOption(option);
+        }
+        
+        // 渲染成就列表
+        function renderAchievements() {
+            const container = document.getElementById('achievementsList');
+            container.innerHTML = '';
+            
+            if (LearningProgress.achievements.length === 0) {
+                container.innerHTML = '<p class="text-muted">完成任务解锁成就</p>';
+            } else {
+                LearningProgress.achievements.forEach(achId => {
+                    const ach = AchievementDefinitions.find(a => a.id === achId);
+                    if (ach) {
+                        const badge = document.createElement('div');
+                        badge.className = 'd-flex align-items-center mb-2';
+                        badge.innerHTML = `
+                            <div class="achievement-badge mr-3">
+                                <i class="fa ${ach.icon}"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold">${ach.name}</h6>
+                                <p class="text-sm text-muted">${ach.description}</p>
+                            </div>
+                        `;
+                        container.appendChild(badge);
+                    }
+                });
+            }
+        }
+        
+        // 更新学习进度显示
+        function updateProgressDisplay() {
+            document.getElementById('totalPractice').textContent = LearningProgress.totalPractice;
+            document.getElementById('consecutiveDays').textContent = LearningProgress.consecutiveDays;
+            document.getElementById('masteredTopics').textContent = `${LearningProgress.masteredTopics}/10`;
+            document.getElementById('avgCorrectRate').textContent = `${LearningProgress.avgCorrectRate}%`;
+            
+            const achievementCount = LearningProgress.achievements.length;
+            document.getElementById('achievementCount').textContent = `${achievementCount}/10`;
+            document.getElementById('achievementProgress').style.width = `${(achievementCount / 10) * 100}%`;
+            document.getElementById('achievementProgress').textContent = `${(achievementCount / 10) * 100}%`;
+            
+            document.getElementById('practiceProgress').style.width = `${(LearningProgress.totalPractice / 100) * 100}%`;
+            document.getElementById('practiceProgress').textContent = `${(LearningProgress.totalPractice / 100) * 100}%`;
+            
+            document.getElementById('streakProgress').style.width = `${(LearningProgress.consecutiveDays / 10) * 100}%`;
+            document.getElementById('streakProgress').textContent = `${(LearningProgress.consecutiveDays / 10) * 100}%`;
+            
+            document.getElementById('topicProgress').style.width = `${(LearningProgress.masteredTopics / 10) * 100}%`;
+            document.getElementById('topicProgress').textContent = `${(LearningProgress.masteredTopics / 10) * 100}%`;
+            
+            document.getElementById('correctRateProgress').style.width = `${LearningProgress.avgCorrectRate}%`;
+            document.getElementById('correctRateProgress').textContent = `${LearningProgress.avgCorrectRate}%`;
+        }
+        
+        // 绑定事件监听
+        function bindEvents() {
+            // 更新图表按钮
+            document.getElementById('updateChartBtn').addEventListener('click', updatePracticeData);
+            
+            // 重置按钮
+            document.getElementById('resetBtn').addEventListener('click', resetAllData);
+            
+            // 图表类型切换
+            document.getElementById('lineChartBtn').addEventListener('click', () => {
+                currentChartType = 'line';
+                renderPracticeChart();
+                document.getElementById('lineChartBtn').classList.add('active');
+                document.getElementById('barChartBtn').classList.remove('active');
+                document.getElementById('areaChartBtn').classList.remove('active');
+            });
+            
+            document.getElementById('barChartBtn').addEventListener('click', () => {
+                currentChartType = 'bar';
+                renderPracticeChart();
+                document.getElementById('lineChartBtn').classList.remove('active');
+                document.getElementById('barChartBtn').classList.add('active');
+                document.getElementById('areaChartBtn').classList.remove('active');
+            });
+            
+            document.getElementById('areaChartBtn').addEventListener('click', () => {
+                currentChartType = 'area';
+                renderPracticeChart();
+                document.getElementById('lineChartBtn').classList.remove('active');
+                document.getElementById('barChartBtn').classList.remove('active');
+                document.getElementById('areaChartBtn').classList.add('active');
+            });
+            
+            // 自动保存切换
+            document.getElementById('autoSave').addEventListener('change', function() {
+                localStorage.setItem('autoSave', this.checked);
+                if (this.checked) {
+                    showNotification('自动保存已启用', 'success');
+                } else {
+                    showNotification('自动保存已禁用', 'warning');
+                }
+            });
+            
+            // 显示提示切换
+            document.getElementById('showTips').addEventListener('change', function() {
+                localStorage.setItem('showTips', this.checked);
+                if (this.checked) {
+                    showNotification('操作提示已启用', 'success');
+                }
+            });
+            
+            // 输入框验证
+            const inputElements = document.querySelectorAll('#day1, #day2, #day3, #day4, #day5');
+            inputElements.forEach(input => {
+                input.addEventListener('blur', function() {
+                    const value = parseInt(this.value);
+                    if (isNaN(value) || value < 0) {
+                        this.classList.add('is-invalid');
+                        this.nextElementSibling.textContent = '请输入非负整数';
+                    } else {
+                        this.classList.remove('is-invalid');
+                        
+                        // 如果启用自动保存，立即更新
+                        if (document.getElementById('autoSave').checked) {
+                            updatePracticeData();
+                        }
+                    }
+                });
+            });
+            
+            // 生成详细报告按钮
+            document.getElementById('generateReportBtn').addEventListener('click', generateDetailedReport);
+            
+            // 窗口大小变化时重绘图表
+            window.addEventListener('resize', () => {
+                myChart.resize();
+                trendChart.resize();
+                topicChart.resize();
+            });
+        }
+        
+        // 更新练习数据
+        function updatePracticeData() {
+            LearningProgress.practiceData = [
+                parseInt(document.getElementById('day1').value),
+                parseInt(document.getElementById('day2').value),
+                parseInt(document.getElementById('day3').value),
+                parseInt(document.getElementById('day4').value),
+                parseInt(document.getElementById('day5').value),
+                0,
+                0
+            ];
+            
+            LearningProgress.totalPractice = LearningProgress.practiceData.reduce((sum, val) => sum + val, 0);
+            
+            // 假设新的练习记录
+            const newRecord = {
+                date: new Date(),
+                count: LearningProgress.totalPractice,
+                topics: ['函数', '循环', '条件语句']
+            };
+            LearningProgress.practiceRecords.push(newRecord);
+            
+            // 更新连续练习天数
+            LearningProgress.consecutiveDays++;
+            
+            // 更新平均正确率
+            let totalCorrectRate = 0;
+            LearningProgress.practiceRecords.forEach(record => {
+                totalCorrectRate += 85; // 假设每次练习正确率为85%
+            });
+            LearningProgress.avgCorrectRate = Math.round(totalCorrectRate / LearningProgress.practiceRecords.length);
+            
+            // 更新已掌握知识点
+            const allTopics = new Set();
+            LearningProgress.practiceRecords.forEach(record => {
+                record.topics.forEach(topic => allTopics.add(topic));
+            });
+            LearningProgress.masteredTopics = Math.min(allTopics.size, 10);
+            
+            // 保存数据
+            saveToLocalStorage();
+            
+            // 渲染图表
+            renderPracticeChart();
+            
+            // 更新进度显示
+            updateProgressDisplay();
+            
+            // 检查成就
+            checkAndUnlockAchievements();
+            
+            // 显示成功通知
+            showNotification('练习数据已更新！', 'success');
+        }
+        
+        // 重置所有数据
+        function resetAllData() {
+            if (confirm('确定要重置所有数据吗？这将清除您的所有练习记录和成就。')) {
+                // 重置数据
+                Object.assign(LearningProgress, {
+                    practiceData: [3, 5, 2, 7, 4, 0, 0],
+                    practiceRecords: [],
+                    consecutiveDays: 0,
+                    achievements: [],
+                    totalPractice: 21,
+                    masteredTopics: 7,
+                    avgCorrectRate: 85
+                });
+                
+                // 重置输入框
+                document.getElementById('day1').value = 3;
+                document.getElementById('day2').value = 5;
+                document.getElementById('day3').value = 2;
+                document.getElementById('day4').value = 7;
+                document.getElementById('day5').value = 4;
+                
+                // 保存到本地存储
+                saveToLocalStorage();
+                
+                // 重新渲染
+                renderPracticeChart();
+                renderAchievements();
+                updateProgressDisplay();
+                
+                // 显示通知
+                showNotification('所有数据已重置为默认状态！', 'warning');
+            }
+        }
+        
+        // 生成详细报告
+        function generateDetailedReport() {
+            // 渲染趋势图表
+            const trendData = LearningProgress.practiceRecords.map(record => record.count);
+            const trendDates = LearningProgress.practiceRecords.map(record => 
+                new Date(record.date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
+            );
+            
+            trendChart.setOption({
+                tooltip: {
+                    trigger: 'axis'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: trendDates
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    name: '练习次数',
+                    data: trendData,
+                    type: 'line',
+                    smooth: true,
+                    itemStyle: {
+                        color: '#3498db'
+                    },
+                    lineStyle: {
+                        width: 3,
+                        color: '#3498db'
+                    }
+                }]
+            });
+            
+            // 渲染知识点图表
+            const topicData = [
+                { value: LearningProgress.masteredTopics, name: '已掌握' },
+                { value: 10 - LearningProgress.masteredTopics, name: '未掌握' }
+            ];
+            
+            topicChart.setOption({
+                tooltip: {
+                    trigger: 'item'
+                },
+                series: [{
+                    name: '知识点掌握情况',
+                    type: 'pie',
+                    radius: '60%',
+                    data: topicData,
+                    itemStyle: {
+                        colors: ['#2ecc71', '#e74c3c']
+                    }
+                }]
+            });
+            
+            // 渲染练习记录表
+            const tableBody = document.getElementById('practiceTable');
+            tableBody.innerHTML = '';
+            
+            LearningProgress.practiceRecords.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(record.date).toLocaleDateString('zh-CN')}</td>
+                    <td>${record.count}</td>
+                    <td>85%</td>
+                    <td>30</td>
+                    <td>${record.topics.join(', ')}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // 显示模态框
+            const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+            reportModal.show();
+        }
+        
+        // 检查并解锁成就
+        function checkAndUnlockAchievements() {
+            AchievementDefinitions.forEach(ach => {
+                if (ach.condition(LearningProgress) && !LearningProgress.achievements.includes(ach.id)) {
+                    LearningProgress.achievements.push(ach.id);
+                    showNotification(`恭喜解锁成就：${ach.name}`, 'success');
+                    renderAchievements();
+                    updateProgressDisplay();
+                }
+            });
+        }
+        
+        // 显示通知
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            document.getElementById('notificationContainer').appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

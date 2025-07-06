@@ -357,65 +357,6 @@
                 });
             });
 
-            // 生成模拟错误数据的函数
-            function getMockErrors(lang) {
-                let errorList = [];
-                if (lang === 'python') {
-                    errorList = [
-                        {
-                            type: "语法错误",
-                            location: "第3行，第5列",
-                            message: "SyntaxError: 缺少冒号"
-                        },
-                        {
-                            type: "未定义变量",
-                            location: "第7行，第12列",
-                            message: "NameError: 变量 'x' 未定义"
-                        }
-                    ];
-                } else if (lang === 'java') {
-                    errorList = [
-                        {
-                            type: "类型不匹配",
-                            location: "第5行，第14列",
-                            message: "Type mismatch: 无法将 int 转换为 String"
-                        },
-                        {
-                            type: "缺少分号",
-                            location: "第10行，第20列",
-                            message: "SyntaxError: 缺少 ';'"
-                        }
-                    ];
-                } else if (lang === 'csharp') {
-                    errorList = [
-                        {
-                            type: "语法错误",
-                            location: "第2行，第8列",
-                            message: "Unexpected token"
-                        },
-                        {
-                            type: "未定义函数",
-                            location: "第9行，第3列",
-                            message: "ReferenceError: 函数 'calculate' 未定义"
-                        }
-                    ];
-                } else if (lang === 'cpp') {
-                    errorList = [
-                        {
-                            type: "类型不匹配",
-                            location: "第4行，第10列",
-                            message: "Type mismatch: 无法将 char* 转换为 int"
-                        },
-                        {
-                            type: "缺少分号",
-                            location: "第8行，第15列",
-                            message: "SyntaxError: 缺少 ';'"
-                        }
-                    ];
-                }
-                return errorList;
-            }
-
             // 分析代码按钮点击事件
             analyzeBtn.addEventListener('click', async function () {
                 const code = codeInput.value.trim();
@@ -431,38 +372,40 @@
                     // 获取选中的编程语言
                     const activeLang = document.querySelector('.option.active').dataset.lang;
 
-                    // 这里应该替换为真实的 API 请求
-                    // const response = await fetch('/api/analyze-code', {
-                    //     method: 'POST',
-                    //     headers: {
-                    //         'Content-Type': 'application/json'
-                    //     },
-                    //     body: JSON.stringify({
-                    //         code: code,
-                    //         language: activeLang
-                    //     })
-                    // });
+                    // 构建请求数据
+                    const requestData = {
+                        action: 'run',
+                        code: code,
+                        language: activeLang
+                    };
 
-                    // if (!response.ok) {
-                    //     throw new Error(`请求失败: ${response.status}`);
-                    // }
+                    // 发送请求到后端
+                    const response = await fetch('http://127.0.0.1:5000/api/code', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestData)
+                    });
 
-                    // const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(`请求失败: ${response.status}`);
+                    }
 
-                    // 模拟 API 请求延迟
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    const errorList = getMockErrors(activeLang);
+                    const data = await response.json();
 
-                    // 生成错误列表 HTML
+                    // 处理后端返回的数据
                     let errorHtml = '';
-                    if (errorList.length > 0) {
-                        errorHtml = errorList.map(error => `
-                            <div class="error-item">
-                                <div class="error-type">${error.type}</div>
-                                <div class="error-location">${error.location}</div>
-                                <div class="error-message">${error.message}</div>
-                            </div>
-                        `).join('');
+                    if (data.result) {
+                        errorHtml = `<div class="error-item">
+                            <div class="error-type">运行结果</div>
+                            <div class="error-message">${data.result}</div>
+                        </div>`;
+                    } else if (data.generated_code) {
+                        errorHtml = `<div class="error-item">
+                            <div class="error-type">生成的代码</div>
+                            <div class="error-message"><pre><code>${data.generated_code}</code></pre></div>
+                        </div>`;
                     } else {
                         errorHtml = '<div style="color: #388e3c;">🎉 恭喜！代码中未发现错误</div>';
                     }
